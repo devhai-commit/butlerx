@@ -1,0 +1,170 @@
+{
+  "@@locale": "vi",
+
+  "appName": "ButlerX",
+  "@appName": { "description": "Tên ứng dụng" },
+
+  "appTagline": "Trợ lý gia đình thông minh của bạn",
+  "@appTagline": { "description": "Tagline của ứng dụng" },
+
+  "btnContinue": "Tiếp tục",
+  "btnBack": "Quay lại",
+  "btnSave": "Lưu",
+  "btnCancel": "Hủy",
+  "btnConfirm": "Xác nhận",
+  "btnEdit": "Chỉnh sửa",
+  "btnDelete": "Xóa",
+  "btnRetry": "Thử lại",
+  "btnClose": "Đóng",
+  "btnDone": "Xong",
+
+  "errorGeneral": "Đã xảy ra lỗi. Vui lòng thử lại.",
+  "errorNetwork": "Không có kết nối mạng. Vui lòng kiểm tra internet.",
+  "errorUnauthorized": "Phiên đăng nhập đã hết hạn. Vui lòng đăng nhập lại.",
+
+  "authWelcome": "Chào mừng đến với ButlerX",
+  "authSubtitle": "Trợ lý gia đình thông minh của bạn",
+  "authEmailLabel": "Email",
+  "authEmailHint": "Nhập địa chỉ email",
+  "authPasswordLabel": "Mật khẩu",
+  "authPasswordHint": "Nhập mật khẩu",
+  "authLoginBtn": "Đăng nhập",
+  "authRegisterBtn": "Đăng ký",
+  "authGoogleBtn": "Tiếp tục với Google",
+  "authForgotPassword": "Quên mật khẩu?",
+  "authNoAccount": "Chưa có tài khoản? ",
+  "authHaveAccount": "Đã có tài khoản? ",
+  "authLogout": "Đăng xuất",
+  "authEmailInvalid": "Email không hợp lệ",
+  "authPasswordTooShort": "Mật khẩu phải có ít nhất 6 ký tự",
+
+  "onboardingStep": "Bước {current}/{total}",
+  "@onboardingStep": {
+    "placeholders": {
+      "current": { "type": "int" },
+      "total": { "type": "int" }
+    }
+  },
+  "onboardingNameTitle": "Xin chào! Tôi là ButlerX",
+  "onboardingNameSubtitle": "Hãy để tôi làm quen với bạn nhé",
+  "onboardingNameLabel": "Tên của bạn",
+  "onboardingNameHint": "Ví dụ: Minh, Hoa, An...",
+  "onboardingNameRequired": "Vui lòng nhập tên của bạn",
+  "onboardingDobTitle": "Ngày sinh của bạn?",
+  "onboardingDobLabel": "Chọn ngày sinh",
+  "onboardingGenderTitle": "Giới tính của bạn?",
+  "onboardingGenderMale": "Nam",
+  "onboardingGenderFemale": "Nữ",
+  "onboardingGenderOther": "Khác",
+  "onboardingAddressTitle": "Bạn muốn tôi xưng hô thế nào?",
+  "onboardingAddressSubtitle": "Tôi sẽ gọi bạn là...",
+  "onboardingPersonalityTitle": "Tính cách của bạn?",
+  "onboardingPersonalitySubtitle": "Tôi sẽ điều chỉnh cách trò chuyện phù hợp",
+  "onboardingPersonalityFormal": "Trang trọng, lịch sự",
+  "onboardingPersonalityWarm": "Thân thiện, ấm áp",
+  "onboardingPersonalityPlayful": "Vui vẻ, hài hước",
+  "onboardingComplete": "Hoàn tất! Chào mừng {name}",
+  "@onboardingComplete": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+
+  "navChat": "Trò chuyện",
+  "navSchedule": "Lịch hẹn",
+  "navHealth": "Sức khỏe",
+  "navMealPlan": "Thực đơn",
+  "navSettings": "Cài đặt",
+
+  "chatInputHint": "Nhập tin nhắn...",
+  "chatVoiceHint": "Nhấn để nói...",
+  "chatListening": "Đang nghe...",
+  "chatThinking": "Đang suy nghĩ...",
+  "chatNewConversation": "Cuộc trò chuyện mới",
+
+  "scheduleTitle": "Lịch hẹn",
+  "scheduleAddBtn": "Thêm lịch hẹn",
+  "scheduleVoiceBtn": "Tạo bằng giọng nói",
+  "scheduleHandwriteBtn": "Viết tay",
+  "scheduleEmpty": "Chưa có lịch hẹn nào",
+  "scheduleEmptySubtitle": "Thêm lịch hẹn bằng giọng nói, chữ viết tay hoặc nhập tay",
+  "scheduleToday": "Hôm nay",
+  "scheduleTomorrow": "Ngày mai",
+  "scheduleThisWeek": "Tuần này",
+  "scheduleConfirmTitle": "Xác nhận lịch hẹn",
+  "scheduleConfirmSubtitle": "Thông tin sau có đúng không?",
+
+  "healthTitle": "Sức khỏe",
+  "healthLogBtn": "Ghi chỉ số",
+  "healthWeight": "Cân nặng",
+  "healthHeight": "Chiều cao",
+  "healthBloodPressure": "Huyết áp",
+  "healthHeartRate": "Nhịp tim",
+  "healthSteps": "Số bước chân",
+  "healthSleep": "Giấc ngủ",
+  "healthUnitKg": "kg",
+  "healthUnitCm": "cm",
+  "healthUnitMmhg": "mmHg",
+  "healthUnitBpm": "bpm",
+  "healthUnitSteps": "bước",
+  "healthUnitHours": "giờ",
+  "healthWeeklyAvg": "Trung bình tuần",
+  "healthNoData": "Chưa có dữ liệu",
+
+  "mealPlanTitle": "Thực đơn của tôi",
+  "mealPlanGenerateBtn": "Tạo thực đơn",
+  "mealPlanRegenerateBtn": "Tạo lại",
+  "mealPlanBreakfast": "Bữa sáng",
+  "mealPlanLunch": "Bữa trưa",
+  "mealPlanDinner": "Bữa tối",
+  "mealPlanSnack": "Bữa phụ",
+  "mealPlanSwapBtn": "Đổi món",
+  "mealPlanShoppingList": "Danh sách mua sắm",
+  "mealPlanCalories": "{cal} kcal",
+  "@mealPlanCalories": {
+    "placeholders": {
+      "cal": { "type": "int" }
+    }
+  },
+  "mealPlanGenerating": "Đang tạo thực đơn...",
+  "mealPlanEmpty": "Chưa có thực đơn",
+  "mealPlanEmptySubtitle": "Nhấn để tạo thực đơn cá nhân hóa dựa trên sức khỏe của bạn",
+
+  "settingsTitle": "Cài đặt",
+  "settingsProfile": "Hồ sơ cá nhân",
+  "settingsNotifications": "Thông báo",
+  "settingsVoice": "Giọng nói",
+  "settingsPrivacy": "Quyền riêng tư",
+  "settingsTheme": "Giao diện",
+  "settingsThemeLight": "Sáng",
+  "settingsThemeDark": "Tối",
+  "settingsThemeSystem": "Theo hệ thống",
+  "settingsAbout": "Về ButlerX",
+  "settingsVersion": "Phiên bản {version}",
+  "@settingsVersion": {
+    "placeholders": {
+      "version": { "type": "String" }
+    }
+  },
+  "settingsLogout": "Đăng xuất",
+  "settingsLogoutConfirm": "Bạn có chắc chắn muốn đăng xuất?",
+  "settingsDeleteAccount": "Xóa tài khoản",
+  "settingsDeleteAccountConfirm": "Hành động này không thể hoàn tác. Tất cả dữ liệu của bạn sẽ bị xóa vĩnh viễn.",
+
+  "reminderTitle": "Nhắc nhở",
+  "reminderBefore": "Trước {minutes} phút",
+  "@reminderBefore": {
+    "placeholders": {
+      "minutes": { "type": "int" }
+    }
+  },
+  "reminderUpcoming": "Sắp diễn ra",
+  "reminderMorningBriefing": "Chương trình ngày hôm nay",
+
+  "permissionMicTitle": "Quyền truy cập microphone",
+  "permissionMicMessage": "ButlerX cần quyền truy cập microphone để lắng nghe giọng nói của bạn.",
+  "permissionNotifTitle": "Quyền gửi thông báo",
+  "permissionNotifMessage": "Cho phép ButlerX gửi thông báo nhắc nhở lịch hẹn.",
+  "permissionDeny": "Từ chối",
+  "permissionAllow": "Cho phép"
+}
