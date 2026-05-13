@@ -2,10 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/providers/stt_provider.dart';
+import '../../../../shared/providers/tts_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../providers/chat_notifier.dart';
 import '../widgets/jarvis_orb.dart';
 import '../widgets/message_bubble.dart';
+import 'conversation_list_page.dart';
 
 class ChatPage extends ConsumerStatefulWidget {
   const ChatPage({super.key});
@@ -50,7 +53,6 @@ class _ChatPageState extends ConsumerState<ChatPage> {
   Widget build(BuildContext context) {
     final chatState = ref.watch(chatNotifierProvider);
     final authState = ref.watch(authNotifierProvider);
-    final cs = Theme.of(context).colorScheme;
 
     final messages = chatState.messages;
     final lastId = messages.lastOrNull?.id ?? '';
@@ -69,6 +71,15 @@ class _ChatPageState extends ConsumerState<ChatPage> {
         title: const Text('ButlerX'),
         centerTitle: true,
         actions: [
+          IconButton(
+            icon: const Icon(Icons.history_outlined),
+            tooltip: 'Lịch sử trò chuyện',
+            onPressed: () => Navigator.of(context).push(
+              MaterialPageRoute(
+                builder: (_) => const ConversationListPage(),
+              ),
+            ),
+          ),
           IconButton(
             icon: const Icon(Icons.add_comment_outlined),
             tooltip: 'Cuộc trò chuyện mới',
@@ -231,7 +242,7 @@ class _SuggestionChip extends ConsumerWidget {
   }
 }
 
-class _InputBar extends StatelessWidget {
+class _InputBar extends ConsumerWidget {
   const _InputBar({
     required this.controller,
     required this.focusNode,
@@ -245,8 +256,19 @@ class _InputBar extends StatelessWidget {
   final VoidCallback onSend;
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
     final cs = Theme.of(context).colorScheme;
+    final ttsState = ref.watch(ttsNotifierProvider);
+    final sttState = ref.watch(sttNotifierProvider);
+
+    // Update text field with live transcript
+    if (sttState.isListening && sttState.transcript.isNotEmpty) {
+      controller.text = sttState.transcript;
+      controller.selection = TextSelection.fromPosition(
+        TextPosition(offset: controller.text.length),
+      );
+    }
+
     return SafeArea(
       child: Container(
         padding: const EdgeInsets.fromLTRB(12, 8, 12, 8),
@@ -256,6 +278,44 @@ class _InputBar extends StatelessWidget {
         ),
         child: Row(
           children: [
+            // TTS toggle button
+            IconButton(
+              icon: Icon(
+                ttsState.enabled
+                    ? Icons.volume_up_rounded
+                    : Icons.volume_off_outlined,
+                size: 22,
+              ),
+              color: ttsState.enabled ? cs.primary : cs.outline,
+              tooltip: ttsState.enabled ? 'Tắt đọc to' : 'Bật đọc to',
+              onPressed: () =>
+                  ref.read(ttsNotifierProvider.notifier).toggle(),
+            ),
+            // Microphone button
+            IconButton(
+              icon: Icon(
+                sttState.isListening
+                    ? Icons.mic_rounded
+                    : Icons.mic_none_outlined,
+                size: 22,
+              ),
+              color: sttState.isListening ? cs.error : cs.outline,
+              tooltip: sttState.isListening ? 'Dừng nghe' : 'Nói',
+              onPressed: () {
+                if (sttState.isListening) {
+                  ref.read(sttNotifierProvider.notifier).stopListening();
+                  // Auto-send if there's transcript
+                  if (controller.text.trim().isNotEmpty) {
+                    Future.delayed(
+                      const Duration(milliseconds: 300),
+                      onSend,
+                    );
+                  }
+                } else {
+                  ref.read(sttNotifierProvider.notifier).startListening();
+                }
+              },
+            ),
             Expanded(
               child: TextField(
                 controller: controller,

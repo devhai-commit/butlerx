@@ -1,6 +1,10 @@
+import 'dart:async';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 
+import '../../../../shared/providers/stt_provider.dart';
+import '../../../../shared/providers/tts_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../data/repositories/chat_repository.dart';
 import '../../data/services/openai_service.dart';
@@ -62,6 +66,40 @@ class ChatNotifier extends _$ChatNotifier {
     } else {
       final conv = await repo.createConversation(authState.profile.uid);
       state = state.copyWith(conversation: conv);
+    }
+  }
+
+  /// Start voice input — sets OrbState to listening, records speech,
+  /// then auto-sends the transcribed text.
+  Future<void> startVoiceInput() async {
+    final sttNotifier = ref.read(sttNotifierProvider.notifier);
+    state = state.copyWith(orbState: OrbState.listening, error: () => null);
+    await sttNotifier.startListening();
+  }
+
+  /// Stop voice input — captures transcript and sends as message.
+  Future<void> stopVoiceInputAndSend() async {
+    final sttNotifier = ref.read(sttNotifierProvider.notifier);
+    await sttNotifier.stopListening();
+
+    final transcript = ref.read(sttNotifierProvider).transcript;
+    if (transcript.trim().isNotEmpty) {
+      await sendMessage(transcript.trim());
+    } else {
+      state = state.copyWith(orbState: OrbState.idle);
+    }
+  }
+
+  /// Load a specific conversation from history.
+  Future<void> loadConversation(String conversationId) async {
+    final repo = ref.read(chatRepositoryProvider);
+    final conv = await repo.loadConversation(conversationId);
+    if (conv != null) {
+      state = state.copyWith(
+        conversation: conv,
+        orbState: OrbState.idle,
+        error: () => null,
+      );
     }
   }
 
@@ -141,6 +179,11 @@ class ChatNotifier extends _$ChatNotifier {
         conversation: conversation,
         orbState: OrbState.idle,
       );
+
+      // Speak response if TTS is enabled
+      unawaited(
+        ref.read(ttsNotifierProvider.notifier).speak(buffer.toString()),
+      );
     } catch (e) {
       // Remove empty streaming message on error, show error
       final msgs = conversation.messages
@@ -169,3 +212,4 @@ class ChatNotifier extends _$ChatNotifier {
 
   void clearError() => state = state.copyWith(error: () => null);
 }
+

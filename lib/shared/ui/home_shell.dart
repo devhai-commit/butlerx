@@ -10,8 +10,8 @@ class HomeShell extends StatelessWidget {
   static const _tabs = [
     (route: AppRoutes.chat, icon: Icons.chat_bubble_outline, activeIcon: Icons.chat_bubble, label: 'Trò chuyện'),
     (route: AppRoutes.schedule, icon: Icons.calendar_today_outlined, activeIcon: Icons.calendar_today, label: 'Lịch hẹn'),
+    (route: AppRoutes.reminders, icon: Icons.notifications_none_outlined, activeIcon: Icons.notifications_active, label: 'Nhắc nhở'),
     (route: AppRoutes.health, icon: Icons.favorite_outline, activeIcon: Icons.favorite, label: 'Sức khỏe'),
-    (route: AppRoutes.mealPlan, icon: Icons.restaurant_outlined, activeIcon: Icons.restaurant, label: 'Thực đơn'),
     (route: AppRoutes.settings, icon: Icons.settings_outlined, activeIcon: Icons.settings, label: 'Cài đặt'),
   ];
 

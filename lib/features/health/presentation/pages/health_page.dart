@@ -1,3 +1,4 @@
+import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
@@ -47,7 +48,12 @@ class HealthPage extends ConsumerWidget {
                   ),
                 if (state.records.isEmpty)
                   const SliverFillRemaining(child: _EmptyState())
-                else
+                else ...[
+                  // Weight trend chart
+                  if (state.records.where((r) => r.weightKg != null).length >= 2)
+                    SliverToBoxAdapter(
+                      child: _WeightTrendChart(records: state.records),
+                    ),
                   SliverList.separated(
                     itemCount: state.records.length,
                     separatorBuilder: (_, __) => const Divider(height: 1),
@@ -60,6 +66,7 @@ class HealthPage extends ConsumerWidget {
                       ),
                     ),
                   ),
+                ],
                 const SliverToBoxAdapter(child: SizedBox(height: 88)),
               ],
             ),
@@ -325,5 +332,170 @@ class _EmptyState extends StatelessWidget {
         ],
       ),
     );
+  }
+}
+
+// ── Weight Trend Chart ────────────────────────────────────────────────────────
+
+class _WeightTrendChart extends StatelessWidget {
+  const _WeightTrendChart({required this.records});
+  final List<HealthRecord> records;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final tt = Theme.of(context).textTheme;
+
+    // Filter records with weight and sort by date
+    final weightRecords = records
+        .where((r) => r.weightKg != null)
+        .toList()
+      ..sort((a, b) => a.recordedAt.compareTo(b.recordedAt));
+
+    if (weightRecords.length < 2) return const SizedBox.shrink();
+
+    // Take last 14 records max for readability
+    final data = weightRecords.length > 14
+        ? weightRecords.sublist(weightRecords.length - 14)
+        : weightRecords;
+
+    final spots = <FlSpot>[];
+    for (var i = 0; i < data.length; i++) {
+      spots.add(FlSpot(i.toDouble(), data[i].weightKg!));
+    }
+
+    final minWeight = spots.map((s) => s.y).reduce((a, b) => a < b ? a : b);
+    final maxWeight = spots.map((s) => s.y).reduce((a, b) => a > b ? a : b);
+    final padding = (maxWeight - minWeight) * 0.2;
+
+    return Card(
+      margin: const EdgeInsets.fromLTRB(16, 8, 16, 16),
+      child: Padding(
+        padding: const EdgeInsets.all(16),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Row(
+              children: [
+                Icon(Icons.show_chart_outlined, color: cs.primary, size: 20),
+                const SizedBox(width: 8),
+                Text('Biểu đồ cân nặng',
+                    style: tt.titleSmall
+                        ?.copyWith(fontWeight: FontWeight.bold)),
+              ],
+            ),
+            const SizedBox(height: 16),
+            SizedBox(
+              height: 180,
+              child: LineChart(
+                LineChartData(
+                  gridData: FlGridData(
+                    show: true,
+                    drawVerticalLine: false,
+                    horizontalInterval: _interval(minWeight, maxWeight),
+                    getDrawingHorizontalLine: (value) => FlLine(
+                      color: cs.outlineVariant.withValues(alpha: 0.3),
+                      strokeWidth: 1,
+                    ),
+                  ),
+                  titlesData: FlTitlesData(
+                    leftTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 40,
+                        getTitlesWidget: (value, meta) => Text(
+                          '${value.toStringAsFixed(0)}',
+                          style: tt.labelSmall?.copyWith(
+                              color: cs.outline, fontSize: 10),
+                        ),
+                      ),
+                    ),
+                    bottomTitles: AxisTitles(
+                      sideTitles: SideTitles(
+                        showTitles: true,
+                        reservedSize: 24,
+                        interval: (data.length / 4).ceilToDouble().clamp(1, 7),
+                        getTitlesWidget: (value, meta) {
+                          final idx = value.toInt();
+                          if (idx < 0 || idx >= data.length) {
+                            return const SizedBox.shrink();
+                          }
+                          final dt = data[idx].recordedAt;
+                          return Text(
+                            '${dt.day}/${dt.month}',
+                            style: tt.labelSmall?.copyWith(
+                                color: cs.outline, fontSize: 9),
+                          );
+                        },
+                      ),
+                    ),
+                    topTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                    rightTitles: const AxisTitles(
+                        sideTitles: SideTitles(showTitles: false)),
+                  ),
+                  borderData: FlBorderData(show: false),
+                  minX: 0,
+                  maxX: (data.length - 1).toDouble(),
+                  minY: (minWeight - padding).clamp(0, double.infinity),
+                  maxY: maxWeight + padding,
+                  lineBarsData: [
+                    LineChartBarData(
+                      spots: spots,
+                      isCurved: true,
+                      curveSmoothness: 0.3,
+                      color: cs.primary,
+                      barWidth: 2.5,
+                      isStrokeCapRound: true,
+                      dotData: FlDotData(
+                        show: true,
+                        getDotPainter: (spot, _, __, ___) =>
+                            FlDotCirclePainter(
+                          radius: 3,
+                          color: cs.primary,
+                          strokeWidth: 1.5,
+                          strokeColor: cs.surface,
+                        ),
+                      ),
+                      belowBarData: BarAreaData(
+                        show: true,
+                        color: cs.primary.withValues(alpha: 0.1),
+                      ),
+                    ),
+                  ],
+                  lineTouchData: LineTouchData(
+                    touchTooltipData: LineTouchTooltipData(
+                      getTooltipItems: (spots) => spots
+                          .map((s) => LineTooltipItem(
+                                '${s.y.toStringAsFixed(1)} kg',
+                                TextStyle(
+                                  color: cs.onPrimary,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
+                              ))
+                          .toList(),
+                    ),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              '${data.length} bản ghi gần nhất',
+              style: tt.labelSmall?.copyWith(color: cs.outline),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  double _interval(double min, double max) {
+    final range = max - min;
+    if (range <= 2) return 0.5;
+    if (range <= 5) return 1;
+    if (range <= 10) return 2;
+    return 5;
   }
 }

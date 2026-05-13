@@ -2,8 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../../core/constants/app_constants.dart';
+import '../../../../shared/providers/theme_provider.dart';
+import '../../../../shared/providers/tts_provider.dart';
+import '../../../auth/domain/entities/user_profile.dart';
+import '../../../auth/presentation/pages/profile_edit_page.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
 import '../../../chat/data/services/openai_service.dart';
+import '../../../meal_plan/presentation/pages/meal_plan_page.dart';
 
 class SettingsPage extends ConsumerStatefulWidget {
   const SettingsPage({super.key});
@@ -29,6 +34,8 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
   @override
   Widget build(BuildContext context) {
     final authState = ref.watch(authNotifierProvider);
+    final ttsState = ref.watch(ttsNotifierProvider);
+    final themeMode = ref.watch(themeNotifierProvider);
     final cs = Theme.of(context).colorScheme;
 
     return Scaffold(
@@ -38,33 +45,176 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
         children: [
           // Profile card
           if (authState is AuthAuthenticated) ...[
-            _SectionHeader(title: 'Tài khoản'),
             _ProfileCard(profile: authState.profile),
+            const SizedBox(height: 8),
+            _SettingsCard(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.edit_outlined, color: cs.primary),
+                  title: const Text('Sửa hồ sơ'),
+                  subtitle: const Text('Thay đổi tên, giới tính, xưng hô...'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _openPage(context, const ProfileEditPage()),
+                ),
+              ],
+            ),
+            const SizedBox(height: AppConstants.spacingMd),
+
+            // Meal Plan shortcut (moved from bottom nav)
+            _SectionHeader(title: 'Tính năng'),
+            _SettingsCard(
+              children: [
+                ListTile(
+                  leading: Icon(Icons.restaurant_outlined, color: cs.primary),
+                  title: const Text('Thực đơn AI'),
+                  subtitle: const Text('Tạo thực đơn 7 ngày theo sức khoẻ'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => _openPage(context, const MealPlanPage()),
+                ),
+              ],
+            ),
             const SizedBox(height: AppConstants.spacingMd),
           ],
 
           // OpenAI API Key
           _SectionHeader(title: 'OpenAI'),
-          _ApiKeyTile(
-            hasKey: _hasApiKey,
-            onChanged: () => _checkApiKey(),
+          _ApiKeyTile(hasKey: _hasApiKey, onChanged: _checkApiKey),
+          const SizedBox(height: AppConstants.spacingMd),
+
+          // TTS
+          _SectionHeader(title: 'Giọng đọc (TTS)'),
+          _SettingsCard(
+            children: [
+              SwitchListTile(
+                value: ttsState.enabled,
+                onChanged: (_) =>
+                    ref.read(ttsNotifierProvider.notifier).toggle(),
+                title: const Text('Đọc to phản hồi'),
+                subtitle: const Text('AI sẽ đọc to câu trả lời bằng tiếng Việt'),
+                secondary: Icon(
+                  ttsState.enabled
+                      ? Icons.volume_up_rounded
+                      : Icons.volume_off_outlined,
+                ),
+              ),
+              if (ttsState.enabled) ...[
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.speed_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      const Text('Tốc độ đọc'),
+                      const Spacer(),
+                      Text(
+                        ttsState.rate.toStringAsFixed(1),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                Slider(
+                  value: ttsState.rate,
+                  min: 0.25,
+                  max: 1.0,
+                  divisions: 6,
+                  onChanged: (v) =>
+                      ref.read(ttsNotifierProvider.notifier).setRate(v),
+                ),
+                const Divider(height: 1),
+                Padding(
+                  padding: const EdgeInsets.fromLTRB(16, 8, 16, 4),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.graphic_eq_outlined, size: 18),
+                      const SizedBox(width: 8),
+                      const Text('Cao độ giọng'),
+                      const Spacer(),
+                      Text(
+                        ttsState.pitch.toStringAsFixed(1),
+                        style: TextStyle(
+                            color: Theme.of(context).colorScheme.primary,
+                            fontWeight: FontWeight.w600),
+                      ),
+                    ],
+                  ),
+                ),
+                Slider(
+                  value: ttsState.pitch,
+                  min: 0.5,
+                  max: 2.0,
+                  divisions: 6,
+                  onChanged: (v) =>
+                      ref.read(ttsNotifierProvider.notifier).setPitch(v),
+                ),
+                const Divider(height: 1),
+                ListTile(
+                  leading: const Icon(Icons.play_circle_outline),
+                  title: const Text('Thử giọng đọc'),
+                  trailing: const Icon(Icons.chevron_right),
+                  onTap: () => ref
+                      .read(ttsNotifierProvider.notifier)
+                      .speak('Xin chào! Tôi là ButlerX, trợ lý gia đình của bạn.'),
+                ),
+              ],
+            ],
+          ),
+          const SizedBox(height: AppConstants.spacingMd),
+
+          // Appearance
+          _SectionHeader(title: 'Giao diện'),
+          _SettingsCard(
+            children: [
+              ...[
+                (ThemeMode.system, Icons.brightness_auto_outlined, 'Tự động (hệ thống)'),
+                (ThemeMode.light, Icons.light_mode_outlined, 'Sáng'),
+                (ThemeMode.dark, Icons.dark_mode_outlined, 'Tối'),
+              ].map(
+                (item) => RadioListTile<ThemeMode>(
+                  value: item.$1,
+                  groupValue: themeMode,
+                  onChanged: (v) {
+                    if (v != null) {
+                      ref.read(themeNotifierProvider.notifier).setMode(v);
+                    }
+                  },
+                  secondary: Icon(item.$2),
+                  title: Text(item.$3),
+                  controlAffinity: ListTileControlAffinity.trailing,
+                ),
+              ),
+            ],
           ),
           const SizedBox(height: AppConstants.spacingMd),
 
           // Sign out
-          _SectionHeader(title: 'Tài khoản'),
-          ListTile(
-            shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-            ),
-            tileColor: cs.surfaceContainerLow,
-            leading: Icon(Icons.logout, color: cs.error),
-            title: Text('Đăng xuất', style: TextStyle(color: cs.error)),
-            onTap: () => _confirmSignOut(context),
+          _SectionHeader(title: 'Phiên đăng nhập'),
+          _SettingsCard(
+            children: [
+              ListTile(
+                leading: Icon(Icons.logout,
+                    color: Theme.of(context).colorScheme.error),
+                title: Text(
+                  'Đăng xuất',
+                  style: TextStyle(
+                      color: Theme.of(context).colorScheme.error),
+                ),
+                trailing: const Icon(Icons.chevron_right),
+                onTap: () => _confirmSignOut(context),
+              ),
+            ],
           ),
+          const SizedBox(height: 32),
         ],
       ),
     );
+  }
+
+  void _openPage(BuildContext context, Widget page) {
+    Navigator.of(context).push(MaterialPageRoute(builder: (_) => page));
   }
 
   void _confirmSignOut(BuildContext context) {
@@ -84,6 +234,7 @@ class _SettingsPageState extends ConsumerState<SettingsPage> {
             ),
             onPressed: () async {
               Navigator.pop(context);
+              await ref.read(ttsNotifierProvider.notifier).stop();
               await ref.read(authNotifierProvider.notifier).signOut();
             },
             child: const Text('Đăng xuất'),
@@ -115,13 +266,31 @@ class _SectionHeader extends StatelessWidget {
   }
 }
 
-class _ProfileCard extends StatelessWidget {
-  const _ProfileCard({required this.profile});
-  final profile;
+class _SettingsCard extends StatelessWidget {
+  const _SettingsCard({required this.children});
+  final List<Widget> children;
 
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
+    return Card(
+      margin: EdgeInsets.zero,
+      color: cs.surfaceContainerLow,
+      child: Column(children: children),
+    );
+  }
+}
+
+class _ProfileCard extends StatelessWidget {
+  const _ProfileCard({required this.profile});
+  final UserProfile profile;
+  // final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final age = DateTime.now().difference(profile.birthdate).inDays ~/ 365;
+
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -141,6 +310,7 @@ class _ProfileCard extends StatelessWidget {
                   fontWeight: FontWeight.bold),
             ),
           ),
+          // onTap: onTap,
           const SizedBox(width: 14),
           Expanded(
             child: Column(
@@ -155,12 +325,21 @@ class _ProfileCard extends StatelessWidget {
                   profile.email,
                   style: TextStyle(color: cs.outline, fontSize: 13),
                 ),
-                const SizedBox(height: 4),
+                const SizedBox(height: 6),
                 Wrap(
                   spacing: 6,
+                  runSpacing: 4,
                   children: [
-                    _Tag(label: profile.addressTitle.label, cs: cs),
+                    _Tag(label: '${profile.addressTitle.label} · $age tuổi', cs: cs),
                     _Tag(label: profile.personalityTag.label.split(',').first, cs: cs),
+                    _Tag(
+                      label: switch (profile.gender) {
+                        Gender.male => 'Nam',
+                        Gender.female => 'Nữ',
+                        Gender.other => 'Khác',
+                      },
+                      cs: cs,
+                    ),
                   ],
                 ),
               ],
@@ -224,7 +403,8 @@ class _ApiKeyTileState extends ConsumerState<_ApiKeyTile> {
                   hintText: 'sk-...',
                   labelText: 'API Key',
                   suffixIcon: IconButton(
-                    icon: Icon(obscure ? Icons.visibility_off : Icons.visibility),
+                    icon: Icon(
+                        obscure ? Icons.visibility_off : Icons.visibility),
                     onPressed: () => setS(() => obscure = !obscure),
                   ),
                 ),
@@ -276,25 +456,27 @@ class _ApiKeyTileState extends ConsumerState<_ApiKeyTile> {
   @override
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
-    return ListTile(
-      shape: RoundedRectangleBorder(
-        borderRadius: BorderRadius.circular(AppConstants.radiusMd),
-      ),
-      tileColor: cs.surfaceContainerLow,
-      leading: Icon(
-        Icons.key_outlined,
-        color: widget.hasKey ? Colors.green : cs.outline,
-      ),
-      title: const Text('OpenAI API Key'),
-      subtitle: Text(
-        widget.hasKey ? 'Đã cài đặt ✓' : 'Chưa cài đặt — bắt buộc để dùng chat',
-        style: TextStyle(
-          color: widget.hasKey ? Colors.green : cs.error,
-          fontSize: 12,
+    return _SettingsCard(
+      children: [
+        ListTile(
+          leading: Icon(
+            Icons.key_outlined,
+            color: widget.hasKey ? Colors.green : cs.outline,
+          ),
+          title: const Text('OpenAI API Key'),
+          subtitle: Text(
+            widget.hasKey
+                ? 'Đã cài đặt ✓'
+                : 'Chưa cài đặt — bắt buộc để dùng chat',
+            style: TextStyle(
+              color: widget.hasKey ? Colors.green : cs.error,
+              fontSize: 12,
+            ),
+          ),
+          trailing: const Icon(Icons.chevron_right),
+          onTap: _showApiKeyDialog,
         ),
-      ),
-      trailing: const Icon(Icons.chevron_right),
-      onTap: _showApiKeyDialog,
+      ],
     );
   }
 }

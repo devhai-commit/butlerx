@@ -10,6 +10,7 @@ import '../features/chat/presentation/pages/chat_page.dart';
 import '../features/onboarding/presentation/pages/onboarding_page.dart';
 import '../features/health/presentation/pages/health_page.dart';
 import '../features/meal_plan/presentation/pages/meal_plan_page.dart';
+import '../features/reminders/presentation/pages/reminders_page.dart';
 import '../features/scheduling/presentation/pages/schedule_page.dart';
 import '../features/settings/presentation/pages/settings_page.dart';
 import '../shared/ui/home_shell.dart';
@@ -26,6 +27,7 @@ abstract final class AppRoutes {
   static const String schedule = '/home/schedule';
   static const String health = '/home/health';
   static const String mealPlan = '/home/meal-plan';
+  static const String reminders = '/home/reminders';
   static const String settings = '/home/settings';
 }
 
@@ -103,6 +105,10 @@ GoRouter router(Ref ref) {
           GoRoute(
             path: AppRoutes.mealPlan,
             builder: (_, __) => const MealPlanPage(),
+          ),
+          GoRoute(
+            path: AppRoutes.reminders,
+            builder: (_, __) => const RemindersPage(),
           ),
           GoRoute(
             path: AppRoutes.settings,
