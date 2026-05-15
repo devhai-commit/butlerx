@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+
+<html class="light" lang="vi">
+
+<head>
+  <meta charset="utf-8" />
+  <meta content="width=device-width, initial-scale=1.0" name="viewport" />
+  <title>ButlerX - Đăng nhập</title>
+  <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <link href="https://fonts.googleapis.com/css2?family=Be+Vietnam+Pro:wght@400;600;700;900&amp;display=swap"
+    rel="stylesheet" />
+  <link
+    href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+    rel="stylesheet" />
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          "colors": {
+            "on-background": "#191c23",
+            "surface-container-low": "#f2f3fd",
+            "primary-fixed-dim": "#adc7ff",
+            "on-surface-variant": "#414754",
+            "on-secondary-fixed": "#00201a",
+            "on-primary-fixed": "#001a41",
+            "background": "#f9f9ff",
+            "tertiary-fixed-dim": "#cdbdff",
+            "secondary": "#006b5c",
+            "on-primary-fixed-variant": "#004493",
+            "tertiary": "#6833ea",
+            "surface-dim": "#d8d9e3",
+            "tertiary-fixed": "#e8deff",
+            "surface-container-highest": "#e0e2ec",
+            "on-tertiary-fixed-variant": "#4f00d0",
+            "on-error-container": "#93000a",
+            "on-primary": "#ffffff",
+            "surface-bright": "#f9f9ff",
+            "on-primary-container": "#ffffff",
+            "inverse-surface": "#2d3038",
+            "error": "#ba1a1a",
+            "surface": "#f9f9ff",
+            "primary-container": "#1a73e8",
+            "on-tertiary": "#ffffff",
+            "surface-variant": "#e0e2ec",
+            "on-secondary": "#ffffff",
+            "primary": "#005bbf",
+            "on-tertiary-fixed": "#20005f",
+            "primary-fixed": "#d8e2ff",
+            "secondary-fixed-dim": "#44ddc1",
+            "on-secondary-fixed-variant": "#005145",
+            "surface-tint": "#005bc0",
+            "surface-container-lowest": "#ffffff",
+            "surface-container": "#ecedf7",
+            "on-surface": "#191c23",
+            "surface-container-high": "#e6e8f2",
+            "secondary-container": "#68fadd",
+            "error-container": "#ffdad6",
+            "on-secondary-container": "#007261",
+            "outline-variant": "#c1c6d6",
+            "inverse-on-surface": "#eff0fa",
+            "secondary-fixed": "#68fadd",
+            "tertiary-container": "#8155ff",
+            "on-tertiary-container": "#060021",
+            "on-error": "#ffffff",
+            "outline": "#727785",
+            "inverse-primary": "#adc7ff"
+          },
+          "borderRadius": {
+            "DEFAULT": "0.25rem",
+            "lg": "0.5rem",
+            "xl": "0.75rem",
+            "full": "9999px",
+            "2xl": "1.25rem"
+          },
+          "spacing": {
+            "stack-md": "16px",
+            "stack-sm": "8px",
+            "stack-lg": "24px",
+            "touch-target-min": "48px",
+            "gutter-grid": "16px",
+            "margin-page": "20px"
+          },
+          "fontFamily": {
+            "body-sm": ["Be Vietnam Pro"],
+            "body-md": ["Be Vietnam Pro"],
+            "hero-lg": ["Be Vietnam Pro"],
+            "caption": ["Be Vietnam Pro"],
+            "title-sm": ["Be Vietnam Pro"],
+            "title-md": ["Be Vietnam Pro"],
+            "label-xs": ["Be Vietnam Pro"],
+            "hero-lg-mobile": ["Be Vietnam Pro"]
+          },
+          "fontSize": {
+            "body-sm": ["15px", { "lineHeight": "22px", "fontWeight": "400" }],
+            "body-md": ["16px", { "lineHeight": "24px", "fontWeight": "400" }],
+            "hero-lg": ["32px", { "lineHeight": "40px", "letterSpacing": "-0.02em", "fontWeight": "600" }],
+            "caption": ["13px", { "lineHeight": "18px", "fontWeight": "400" }],
+            "title-sm": ["20px", { "lineHeight": "28px", "fontWeight": "600" }],
+            "title-md": ["24px", { "lineHeight": "32px", "fontWeight": "600" }],
+            "label-xs": ["12px", { "lineHeight": "16px", "letterSpacing": "0.05em", "fontWeight": "600" }],
+            "hero-lg-mobile": ["28px", { "lineHeight": "36px", "letterSpacing": "-0.02em", "fontWeight": "600" }]
+          }
+        },
+      },
+    }
+  </script>
+  <style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head>
+
+<body
+  class="bg-background text-on-background font-body-md min-h-screen flex items-center justify-center p-margin-page relative overflow-hidden">
+  <!-- Ambient background glows -->
+  <div
+    class="absolute top-[-10%] left-[-10%] w-[50vw] h-[50vw] rounded-full bg-primary-fixed-dim/30 blur-[100px] pointer-events-none">
+  </div>
+  <div
+    class="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] rounded-full bg-tertiary-fixed-dim/20 blur-[100px] pointer-events-none">
+  </div>
+  <main class="w-full max-w-[400px] relative z-10 flex flex-col gap-stack-lg">
+    <!-- Header Section -->
+    <header class="text-center flex flex-col items-center gap-stack-sm">
+      <!-- AI Orb (Idle State) -->
+      <div
+        class="w-24 h-24 rounded-full bg-gradient-to-br from-primary to-secondary-container shadow-[0_0_30px_rgba(0,91,191,0.4)] mb-4 flex items-center justify-center relative overflow-hidden">
+        <div class="absolute inset-0 bg-white/20 blur-md rounded-full"></div>
+        <div class="absolute inset-1 bg-gradient-to-tr from-primary to-primary-container rounded-full shadow-inner">
+        </div>
+      </div>
+      <h1 class="font-hero-lg-mobile text-hero-lg-mobile text-on-background md:font-hero-lg md:text-hero-lg">Chào mừng
+        trở lại</h1>
+      <p class="font-body-sm text-body-sm text-on-surface-variant max-w-[80%] mx-auto">Đăng nhập để bắt đầu trò chuyện
+        với trợ lý thông minh của bạn.</p>
+    </header>
+    <!-- Form Section -->
+    <form class="flex flex-col gap-stack-md mt-4">
+      <!-- Email/Phone Input -->
+      <div class="relative group">
+        <input
+          class="w-full h-14 px-4 pt-4 pb-1 bg-surface-container-highest rounded-2xl border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-all duration-300 outline-none peer text-on-background placeholder-transparent shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+          id="username" placeholder="Email hoặc số điện thoại" type="text" />
+        <label
+          class="absolute left-4 top-1.5 text-caption font-caption text-on-surface-variant transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-md peer-placeholder-shown:font-body-md peer-focus:top-1.5 peer-focus:text-caption peer-focus:font-caption peer-focus:text-primary"
+          for="username">Email hoặc số điện thoại</label>
+      </div>
+      <!-- Password Input -->
+      <div class="relative group">
+        <input
+          class="w-full h-14 px-4 pt-4 pb-1 bg-surface-container-highest rounded-2xl border border-transparent focus:border-primary focus:ring-1 focus:ring-primary focus:bg-surface transition-all duration-300 outline-none peer text-on-background placeholder-transparent shadow-[0_4px_20px_rgba(0,0,0,0.03)]"
+          id="password" placeholder="Mật khẩu" type="password" />
+        <label
+          class="absolute left-4 top-1.5 text-caption font-caption text-on-surface-variant transition-all duration-200 peer-placeholder-shown:top-4 peer-placeholder-shown:text-body-md peer-placeholder-shown:font-body-md peer-focus:top-1.5 peer-focus:text-caption peer-focus:font-caption peer-focus:text-primary"
+          for="password">Mật khẩu</label>
+        <button class="absolute right-4 top-4 text-on-surface-variant hover:text-primary transition-colors"
+          type="button">
+          <span class="material-symbols-outlined" style="font-variation-settings: 'FILL' 0;">visibility_off</span>
+        </button>
+      </div>
+      <!-- Forgot Password -->
+      <div class="flex justify-end mt-[-8px]">
+        <a class="font-label-xs text-label-xs text-primary hover:text-on-primary-fixed-variant transition-colors"
+          href="#">Quên mật khẩu?</a>
+      </div>
+      <!-- Primary CTA -->
+      <button
+        class="w-full h-14 mt-2 bg-gradient-to-r from-primary to-surface-tint rounded-full font-title-sm text-title-sm text-on-primary shadow-[0_8px_20px_rgba(0,91,191,0.25)] hover:shadow-[0_8px_25px_rgba(0,91,191,0.4)] transition-all duration-300 relative overflow-hidden group"
+        type="submit">
+        <div class="absolute inset-0 bg-white/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+        </div>
+        Đăng nhập
+      </button>
+      <!-- Register Link -->
+      <div class="text-center mt-2">
+        <span class="font-body-sm text-body-sm text-on-surface-variant">Chưa có tài khoản?</span>
+        <a class="font-title-sm text-title-sm text-primary hover:text-on-primary-fixed-variant transition-colors ml-1"
+          href="#">Đăng ký tài khoản mới</a>
+      </div>
+    </form>
+    <!-- Divider -->
+    <div class="flex items-center gap-4 my-2">
+      <div class="h-[1px] flex-1 bg-outline-variant/50"></div>
+      <span class="font-caption text-caption text-outline">Hoặc đăng nhập bằng</span>
+      <div class="h-[1px] flex-1 bg-outline-variant/50"></div>
+    </div>
+    <!-- Social Login -->
+    <div class="flex justify-center gap-4">
+      <button
+        class="w-14 h-14 rounded-full bg-surface/50 backdrop-blur-md border border-white/40 shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex items-center justify-center hover:bg-surface-container transition-colors">
+        <!-- Placeholder for Google Icon -->
+        <svg fill="none" height="24" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M22.56 12.25C22.56 11.47 22.49 10.72 22.36 10H12V14.26H17.92C17.66 15.63 16.88 16.78 15.71 17.56V20.33H19.28C21.36 18.41 22.56 15.6 22.56 12.25Z"
+            fill="#4285F4"></path>
+          <path
+            d="M12 23C14.97 23 17.46 22.02 19.28 20.33L15.71 17.56C14.73 18.22 13.48 18.61 12 18.61C9.13 18.61 6.68 16.68 5.79 14.07H2.1V16.92C3.93 20.56 7.69 23 12 23Z"
+            fill="#34A853"></path>
+          <path
+            d="M5.79 14.07C5.56 13.39 5.43 12.7 5.43 12C5.43 11.3 5.56 10.61 5.79 9.93V7.08H2.1C1.33 8.62 0.89 10.27 0.89 12C0.89 13.73 1.33 15.38 2.1 16.92L5.79 14.07Z"
+            fill="#FBBC05"></path>
+          <path
+            d="M12 5.38C13.62 5.38 15.06 5.94 16.2 7.02L19.36 3.86C17.45 2.08 14.97 1 12 1C7.69 1 3.93 3.44 2.1 7.08L5.79 9.93C6.68 7.32 9.13 5.38 12 5.38Z"
+            fill="#EA4335"></path>
+        </svg>
+      </button>
+      <button
+        class="w-14 h-14 rounded-full bg-surface/50 backdrop-blur-md border border-white/40 shadow-[0_4px_15px_rgba(0,0,0,0.05)] flex items-center justify-center hover:bg-surface-container transition-colors">
+        <!-- Placeholder for Apple Icon -->
+        <svg fill="none" height="24" viewbox="0 0 24 24" width="24" xmlns="http://www.w3.org/2000/svg">
+          <path
+            d="M16.3653 10.5188C16.3458 8.01639 18.4239 6.8041 18.5283 6.74104C17.3621 5.03362 15.5262 4.77353 14.9082 4.74315C13.3854 4.58844 11.9056 5.64161 11.127 5.64161C10.3444 5.64161 9.12301 4.76451 7.8488 4.79383C6.18664 4.81977 4.6366 5.75945 3.78453 7.24357C2.04631 10.2642 3.33618 14.7335 5.03964 17.1856C5.87532 18.3846 6.86221 19.7423 8.16335 19.6896C9.42065 19.6385 9.90488 18.8783 11.4285 18.8783C12.952 18.8783 13.3916 19.6896 14.7077 19.6644C16.0664 19.6385 16.9205 18.4357 17.7512 17.2343C18.7214 15.8157 19.1179 14.4377 19.1415 14.3644C19.1102 14.3512 16.3888 13.327 16.3653 10.5188ZM13.8824 3.0113C14.5768 2.1691 15.0453 0.999885 14.9179 0C13.8967 0.0416955 12.6375 0.682662 11.9161 1.51264C11.2678 2.25301 10.7027 3.44754 10.8543 4.59477C11.9961 4.68341 13.1879 4.05374 13.8824 3.0113Z"
+            fill="#191C23"></path>
+        </svg>
+      </button>
+    </div>
+  </main>
+</body>
+
+</html>

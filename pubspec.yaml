@@ -29,22 +29,20 @@ dependencies:
   # Data / Serialization
   freezed_annotation: ^2.4.4
   json_annotation: ^4.9.0
-  # flutter_riverpod: ^2.5.1
   hooks_riverpod: ^2.5.1
 
-  # Local Storage
+  # Database
   drift: ^2.21.0
-  sqlite3_flutter_libs: ^0.5.24
+  drift_flutter: ^0.2.3
+  sqlite3_flutter_libs: ^0.5.0
   path_provider: ^2.1.4
+  path: ^1.9.0
 
   # Secure Storage
   flutter_secure_storage: ^9.2.2
   shared_preferences: ^2.3.2
 
-  # Auth & Backend
-  firebase_core: ^3.4.0
-  firebase_auth: ^5.2.0
-  cloud_firestore: ^5.4.0
+  # Auth
   google_sign_in: ^6.2.1
 
   # OpenAI
@@ -52,9 +50,10 @@ dependencies:
 
   # Voice
   speech_to_text: ^7.0.0
+  speech_to_text_platform_interface: ^2.3.0
   flutter_tts: ^4.1.0
   permission_handler: ^11.3.1
-  record: ^5.1.2
+  record: ^6.0.0
 
   # Handwriting / OCR
   google_mlkit_digital_ink_recognition: ^0.14.0
@@ -92,6 +91,3 @@ flutter:
   assets:
     - assets/animations/
     - assets/images/
-
-  # fonts will be added via google_fonts package at runtime
-  # font files can be added later to assets/fonts/ and declared here

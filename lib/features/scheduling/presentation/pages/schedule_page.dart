@@ -73,10 +73,9 @@ class _SchedulePageState extends ConsumerState<SchedulePage> {
           const SizedBox(width: 8),
         ],
       ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () => _openAddPage(context),
+      floatingActionButton: _GradientFab(
         tooltip: 'Thêm lịch hẹn',
-        child: const Icon(Icons.add),
+        onPressed: () => _openAddPage(context),
       ),
       body: Column(
         children: [
@@ -525,6 +524,49 @@ class _VoiceFab extends StatelessWidget {
           notifier.startVoiceListening();
         }
       },
+    );
+  }
+}
+
+// ─── Gradient FAB ─────────────────────────────────────────────────────────────
+
+class _GradientFab extends StatelessWidget {
+  const _GradientFab({required this.tooltip, required this.onPressed});
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [cs.primary, Color.lerp(cs.primary, cs.secondary, 0.3)!],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.primary.withValues(alpha: 0.40),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: const Icon(Icons.add, color: Colors.white, size: 26),
+          ),
+        ),
+      ),
     );
   }
 }

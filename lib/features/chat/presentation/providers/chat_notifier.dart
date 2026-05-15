@@ -6,6 +6,9 @@ import 'package:riverpod_annotation/riverpod_annotation.dart';
 import '../../../../shared/providers/stt_provider.dart';
 import '../../../../shared/providers/tts_provider.dart';
 import '../../../auth/presentation/providers/auth_provider.dart';
+import '../../../health/presentation/providers/health_notifier.dart';
+import '../../../meal_plan/presentation/providers/meal_plan_notifier.dart';
+import '../../../scheduling/presentation/providers/schedule_notifier.dart';
 import '../../data/repositories/chat_repository.dart';
 import '../../data/services/openai_service.dart';
 import '../../domain/entities/chat_message.dart';
@@ -145,8 +148,16 @@ class ChatNotifier extends _$ChatNotifier {
     conversation = await repo.addMessage(conversation, assistantMsg);
     state = state.copyWith(conversation: conversation);
 
-    // Build system prompt from user profile
-    final systemPrompt = PersonaPromptBuilder.build(authState.profile);
+    // Build context-aware system prompt
+    final scheduleState = ref.read(scheduleNotifierProvider);
+    final healthState = ref.read(healthNotifierProvider);
+    final mealPlanState = ref.read(mealPlanNotifierProvider);
+    final systemPrompt = PersonaPromptBuilder.build(
+      authState.profile,
+      upcomingAppointments: scheduleState.upcoming.take(3).toList(),
+      latestHealthRecord: healthState.latest,
+      todayMeal: mealPlanState.plan?.days.firstOrNull,
+    );
 
     // Stream response
     final buffer = StringBuffer();

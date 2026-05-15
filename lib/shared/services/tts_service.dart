@@ -14,11 +14,49 @@ final class TtsService {
 
   Future<void> _init() async {
     if (_initialized) return;
-    await _tts.setLanguage('vi-VN');
+
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      await _tts.setSharedInstance(true);
+    }
+
+    await _tts.awaitSpeakCompletion(true);
+    await _applyVietnamese();
     await _tts.setSpeechRate(0.5);
     await _tts.setVolume(1.0);
     await _tts.setPitch(1.0);
     _initialized = true;
+  }
+
+  // Try vi-VN directly; if unavailable, scan voices for any Vietnamese locale.
+  Future<void> _applyVietnamese() async {
+    final available = await _tts.isLanguageAvailable('vi-VN');
+    if (available == true || available == 1) {
+      await _tts.setLanguage('vi-VN');
+      return;
+    }
+
+    // Fallback: find a voice whose locale starts with 'vi'
+    try {
+      final rawVoices = await _tts.getVoices;
+      if (rawVoices is List) {
+        final viVoice = rawVoices.cast<Map>().firstWhere(
+              (v) =>
+                  (v['locale'] as String? ?? '')
+                      .toLowerCase()
+                      .startsWith('vi'),
+              orElse: () => <String, dynamic>{},
+            );
+        if (viVoice.isNotEmpty) {
+          await _tts.setVoice(
+            {'name': viVoice['name'] as String, 'locale': viVoice['locale'] as String},
+          );
+          return;
+        }
+      }
+    } catch (_) {}
+
+    // Last resort: set the locale and let the engine decide
+    await _tts.setLanguage('vi-VN');
   }
 
   Future<void> speak(String text) async {

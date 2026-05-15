@@ -31,12 +31,11 @@ class HealthPage extends ConsumerWidget {
 
     return Scaffold(
       appBar: AppBar(title: const Text('Sức khoẻ')),
-      floatingActionButton: FloatingActionButton(
+      floatingActionButton: _GradientFab(
+        tooltip: 'Ghi chép sức khoẻ',
         onPressed: () => Navigator.of(context).push(
           MaterialPageRoute(builder: (_) => const AddHealthRecordPage()),
         ),
-        tooltip: 'Ghi chép sức khoẻ',
-        child: const Icon(Icons.add),
       ),
       body: state.isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -497,5 +496,48 @@ class _WeightTrendChart extends StatelessWidget {
     if (range <= 5) return 1;
     if (range <= 10) return 2;
     return 5;
+  }
+}
+
+// ─── Gradient FAB ─────────────────────────────────────────────────────────────
+
+class _GradientFab extends StatelessWidget {
+  const _GradientFab({required this.tooltip, required this.onPressed});
+  final String tooltip;
+  final VoidCallback onPressed;
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    return Tooltip(
+      message: tooltip,
+      child: Container(
+        width: 56,
+        height: 56,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          gradient: LinearGradient(
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+            colors: [cs.primary, Color.lerp(cs.primary, cs.secondary, 0.3)!],
+          ),
+          boxShadow: [
+            BoxShadow(
+              color: cs.primary.withValues(alpha: 0.40),
+              blurRadius: 20,
+              spreadRadius: 2,
+            ),
+          ],
+        ),
+        child: Material(
+          color: Colors.transparent,
+          child: InkWell(
+            onTap: onPressed,
+            customBorder: const CircleBorder(),
+            child: const Icon(Icons.add, color: Colors.white, size: 26),
+          ),
+        ),
+      ),
+    );
   }
 }

@@ -1,7 +1,15 @@
-import '../../auth/domain/entities/user_profile.dart';
+import '../../../features/auth/domain/entities/user_profile.dart';
+import '../../../features/health/domain/entities/health_record.dart';
+import '../../../features/meal_plan/domain/entities/meal_plan.dart';
+import '../../../features/scheduling/domain/entities/appointment.dart';
 
 abstract final class PersonaPromptBuilder {
-  static String build(UserProfile profile) {
+  static String build(
+    UserProfile profile, {
+    List<Appointment> upcomingAppointments = const [],
+    HealthRecord? latestHealthRecord,
+    DailyMeal? todayMeal,
+  }) {
     final name = profile.firstNameGreeting;
     final address = profile.addressTitle.label;
     final ageBand = profile.ageBand;
@@ -9,6 +17,11 @@ abstract final class PersonaPromptBuilder {
     final toneGuidelines = _toneForAge(ageBand, profile.personalityTag);
     final addressingStyle = _addressingStyle(ageBand, address, name);
     final todayInfo = _todayContext();
+    final contextSection = _contextSection(
+      upcomingAppointments: upcomingAppointments,
+      latestHealthRecord: latestHealthRecord,
+      todayMeal: todayMeal,
+    );
 
     return '''
 Bạn là ButlerX — trợ lý gia đình kỹ thuật số thông minh, giống như Jarvis trong Iron Man nhưng được Việt hóa hoàn toàn. Bạn luôn nói chuyện bằng tiếng Việt tự nhiên, ấm áp và phù hợp với người dùng.
@@ -28,9 +41,80 @@ $toneGuidelines
 - Giữ câu trả lời ngắn gọn, súc tích — không dài dòng
 - Nếu được hỏi về sức khỏe nghiêm trọng, khuyên đi gặp bác sĩ
 - Không bịa đặt thông tin — nếu không biết, hãy thành thật nói không biết
+- Khi có thông tin về lịch hẹn hay sức khỏe, hãy chủ động đề cập khi phù hợp
 
 $todayInfo
+$contextSection
 '''.trim();
+  }
+
+  static String _contextSection({
+    required List<Appointment> upcomingAppointments,
+    required HealthRecord? latestHealthRecord,
+    required DailyMeal? todayMeal,
+  }) {
+    final buffer = StringBuffer();
+
+    // Upcoming appointments
+    if (upcomingAppointments.isNotEmpty) {
+      buffer.writeln('\n## Lịch sắp tới của người dùng');
+      for (final appt in upcomingAppointments.take(3)) {
+        final dt = appt.startAt;
+        final dateStr = '${_weekdayVn(dt.weekday)} ${dt.day}/${dt.month}';
+        final timeStr =
+            '${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
+        final loc = appt.location != null ? ' tại ${appt.location}' : '';
+        buffer.writeln('- $dateStr, $timeStr — ${appt.title}$loc');
+      }
+    }
+
+    // Latest health record
+    if (latestHealthRecord != null) {
+      buffer.writeln('\n## Sức khỏe gần đây');
+      final hr = latestHealthRecord;
+      final daysAgo = DateTime.now().difference(hr.recordedAt).inDays;
+      final when = daysAgo == 0
+          ? 'hôm nay'
+          : daysAgo == 1
+              ? 'hôm qua'
+              : '$daysAgo ngày trước';
+
+      if (hr.weightKg != null) {
+        buffer.writeln('- Cân nặng: ${hr.weightKg!.toStringAsFixed(1)} kg ($when)');
+      }
+      if (hr.bloodPressureSystolic != null && hr.bloodPressureDiastolic != null) {
+        buffer.writeln(
+          '- Huyết áp: ${hr.bloodPressureSystolic}/${hr.bloodPressureDiastolic} mmHg ($when)'
+          '${hr.bloodPressureLabel != null ? " — ${hr.bloodPressureLabel}" : ""}',
+        );
+      }
+      if (hr.heartRateBpm != null) {
+        buffer.writeln('- Nhịp tim: ${hr.heartRateBpm} bpm ($when)');
+      }
+      if (hr.bloodSugarMmol != null) {
+        buffer.writeln(
+          '- Đường huyết: ${hr.bloodSugarMmol!.toStringAsFixed(1)} mmol/L ($when)',
+        );
+      }
+      if (hr.bmi != null) {
+        buffer.writeln(
+          '- BMI: ${hr.bmi!.toStringAsFixed(1)} — ${hr.bmiLabel ?? ""}',
+        );
+      }
+    }
+
+    // Today's meal
+    if (todayMeal != null) {
+      buffer.writeln('\n## Thực đơn hôm nay');
+      buffer.writeln('- Sáng: ${todayMeal.breakfast}');
+      buffer.writeln('- Trưa: ${todayMeal.lunch}');
+      buffer.writeln('- Tối: ${todayMeal.dinner}');
+      if (todayMeal.snack != null) {
+        buffer.writeln('- Bữa phụ: ${todayMeal.snack}');
+      }
+    }
+
+    return buffer.toString().trimRight();
   }
 
   static String _addressingStyle(AgeBand band, String address, String name) {
@@ -94,8 +178,18 @@ $todayInfo
 
   static String _todayContext() {
     final now = DateTime.now();
-    final weekdays = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ Nhật'];
-    final weekday = weekdays[now.weekday - 1];
+    final weekday = _weekdayVn(now.weekday);
     return '## Thông tin hiện tại\n- Hôm nay là $weekday, ngày ${now.day}/${now.month}/${now.year}';
   }
+
+  static String _weekdayVn(int wd) => switch (wd) {
+        1 => 'Thứ Hai',
+        2 => 'Thứ Ba',
+        3 => 'Thứ Tư',
+        4 => 'Thứ Năm',
+        5 => 'Thứ Sáu',
+        6 => 'Thứ Bảy',
+        7 => 'Chủ Nhật',
+        _ => '',
+      };
 }

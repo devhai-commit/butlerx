@@ -6,7 +6,7 @@ part of 'voice_intent_parser.dart';
 // RiverpodGenerator
 // **************************************************************************
 
-String _$voiceIntentParserHash() => r'22ac312cfd9edc327e714f09141c6e85de1643cc';
+String _$voiceIntentParserHash() => r'852e39f6e530d23be12dd1d8e8db4390b62de22f';
 
 /// See also [voiceIntentParser].
 @ProviderFor(voiceIntentParser)

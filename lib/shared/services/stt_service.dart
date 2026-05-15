@@ -1,10 +1,12 @@
 import 'dart:async';
+import 'dart:convert';
 
 import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
 import 'package:speech_to_text/speech_recognition_result.dart';
 import 'package:speech_to_text/speech_to_text.dart';
+import 'package:speech_to_text_platform_interface/speech_to_text_platform_interface.dart';
 
 part 'stt_service.g.dart';
 
@@ -31,11 +33,49 @@ final class SttService {
         },
       );
       _initialized = true;
+      if (_available) {
+        _patchWindowsTextRecognition();
+      }
     } catch (e) {
       debugPrint('STT init failed: $e');
       _available = false;
     }
     return _available;
+  }
+
+  // The speech_to_text_windows 1.0.0+beta.8 plugin sends old JSON format:
+  //   {"recognizedWords":"text","finalResult":true}
+  // But speech_to_text 7.x expects:
+  //   {"alternates":[{"recognizedWords":"text","recognizedPhrases":null,"confidence":-1}],"finalResult":true}
+  // This patch intercepts and transforms the callback before it reaches the main package.
+  void _patchWindowsTextRecognition() {
+    final original = SpeechToTextPlatform.instance.onTextRecognition;
+    if (original == null) return;
+    SpeechToTextPlatform.instance.onTextRecognition = (String json) {
+      if (json.isEmpty) return;
+      original(_toNewFormat(json));
+    };
+  }
+
+  String _toNewFormat(String json) {
+    try {
+      final map = jsonDecode(json) as Map<String, dynamic>;
+      if (!map.containsKey('alternates') && map.containsKey('recognizedWords')) {
+        return jsonEncode({
+          'alternates': [
+            {
+              'recognizedWords': (map['recognizedWords'] as String?) ?? '',
+              'recognizedPhrases': null,
+              'confidence': -1.0,
+            }
+          ],
+          'finalResult': (map['finalResult'] as bool?) ?? false,
+        });
+      }
+      return json;
+    } catch (_) {
+      return json;
+    }
   }
 
   Future<void> startListening({
@@ -52,7 +92,7 @@ final class SttService {
       listenFor: listenFor ?? const Duration(seconds: 30),
       pauseFor: const Duration(seconds: 3),
       listenOptions: SpeechListenOptions(
-        cancelOnError: true,
+        cancelOnError: false,
         listenMode: ListenMode.dictation,
       ),
     );

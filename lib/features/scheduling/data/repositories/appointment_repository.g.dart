@@ -7,7 +7,7 @@ part of 'appointment_repository.dart';
 // **************************************************************************
 
 String _$appointmentRepositoryHash() =>
-    r'027b7a7eecd8822b1f66effddc37bb6bca6f43a7';
+    r'1e3d8faec6e7a7bfe43ceb3d67317aab4ceb3ff7';
 
 /// See also [appointmentRepository].
 @ProviderFor(appointmentRepository)

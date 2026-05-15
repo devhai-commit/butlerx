@@ -1,72 +1,96 @@
-import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/database/app_database.dart';
+import '../../../../core/database/database_provider.dart';
 import '../../domain/entities/appointment.dart';
 
 part 'appointment_repository.g.dart';
 
 @riverpod
 AppointmentRepository appointmentRepository(Ref ref) =>
-    AppointmentRepository();
+    AppointmentRepository(ref.watch(appDatabaseProvider));
 
 final class AppointmentRepository {
-  static const _kPrefix = 'appt_';
-  static const _kListKey = 'appointments_';
+  AppointmentRepository(this._db);
 
-  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
+  final AppDatabase _db;
 
   Future<List<Appointment>> getAll(String userId) async {
-    final prefs = await _prefs;
-    final ids = prefs.getStringList('$_kListKey$userId') ?? [];
-    final result = <Appointment>[];
-    for (final id in ids) {
-      final raw = prefs.getString('$_kPrefix$id');
-      if (raw != null) {
-        result.add(Appointment.fromJson(jsonDecode(raw) as Map<String, dynamic>));
-      }
-    }
-    result.sort((a, b) => a.startAt.compareTo(b.startAt));
-    return result;
+    final rows = await _db.appointmentDao.getAllForUser(userId);
+    return rows.map(_rowToAppointment).toList();
   }
 
-  Future<List<Appointment>> getUpcoming(String userId, {int limit = 20}) async {
-    final all = await getAll(userId);
-    final now = DateTime.now();
-    return all.where((a) => a.startAt.isAfter(now)).take(limit).toList();
+  Future<List<Appointment>> getUpcoming(
+    String userId, {
+    int limit = 20,
+  }) async {
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final rows = await _db.appointmentDao
+        .getUpcomingForUser(userId, nowMs, limit: limit);
+    return rows.map(_rowToAppointment).toList();
   }
 
   Future<List<Appointment>> getForDay(String userId, DateTime day) async {
-    final all = await getAll(userId);
-    return all.where((a) => _sameDay(a.startAt, day)).toList();
-  }
-
-  Future<Appointment> save(Appointment appt) async {
-    final prefs = await _prefs;
-    await prefs.setString('$_kPrefix${appt.id}', jsonEncode(appt.toJson()));
-    final ids = prefs.getStringList('$_kListKey${appt.userId}') ?? [];
-    if (!ids.contains(appt.id)) ids.add(appt.id);
-    await prefs.setStringList('$_kListKey${appt.userId}', ids);
-    return appt;
-  }
-
-  Future<void> delete(String userId, String id) async {
-    final prefs = await _prefs;
-    await prefs.remove('$_kPrefix$id');
-    final ids = prefs.getStringList('$_kListKey$userId') ?? [];
-    ids.remove(id);
-    await prefs.setStringList('$_kListKey$userId', ids);
+    final start = DateTime(day.year, day.month, day.day);
+    final end = start.add(const Duration(days: 1));
+    final rows = await _db.appointmentDao.getForDay(
+      userId,
+      start.millisecondsSinceEpoch,
+      end.millisecondsSinceEpoch,
+    );
+    return rows.map(_rowToAppointment).toList();
   }
 
   Future<Appointment?> getById(String id) async {
-    final prefs = await _prefs;
-    final raw = prefs.getString('$_kPrefix$id');
-    if (raw == null) return null;
-    return Appointment.fromJson(jsonDecode(raw) as Map<String, dynamic>);
+    final row = await _db.appointmentDao.getById(id);
+    return row != null ? _rowToAppointment(row) : null;
   }
 
-  bool _sameDay(DateTime a, DateTime b) =>
-      a.year == b.year && a.month == b.month && a.day == b.day;
+  Future<Appointment> save(Appointment appt) async {
+    await _db.appointmentDao.upsert(
+      AppointmentRow(
+        id: appt.id,
+        userId: appt.userId,
+        title: appt.title,
+        startAt: appt.startAt.millisecondsSinceEpoch,
+        endAt: appt.endAt?.millisecondsSinceEpoch,
+        description: appt.description,
+        location: appt.location,
+        reminderOffset: appt.reminderOffset.minutes,
+        source: appt.source.name,
+        rawTranscript: appt.rawTranscript,
+        createdAt: appt.createdAt.millisecondsSinceEpoch,
+        updatedAt: appt.updatedAt.millisecondsSinceEpoch,
+        notificationId: appt.notificationId,
+      ),
+    );
+    return appt;
+  }
+
+  Future<void> delete(String userId, String id) =>
+      _db.appointmentDao.deleteById(id);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  Appointment _rowToAppointment(AppointmentRow row) => Appointment(
+        id: row.id,
+        userId: row.userId,
+        title: row.title,
+        startAt: DateTime.fromMillisecondsSinceEpoch(row.startAt),
+        endAt: row.endAt != null
+            ? DateTime.fromMillisecondsSinceEpoch(row.endAt!)
+            : null,
+        description: row.description,
+        location: row.location,
+        reminderOffset: ReminderOffset.values.firstWhere(
+          (r) => r.minutes == row.reminderOffset,
+          orElse: () => ReminderOffset.fifteenMin,
+        ),
+        source: AppointmentSource.values.byName(row.source),
+        rawTranscript: row.rawTranscript,
+        createdAt: DateTime.fromMillisecondsSinceEpoch(row.createdAt),
+        updatedAt: DateTime.fromMillisecondsSinceEpoch(row.updatedAt),
+        notificationId: row.notificationId,
+      );
 }

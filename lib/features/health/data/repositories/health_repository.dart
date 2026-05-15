@@ -1,57 +1,64 @@
-import 'dart:convert';
-
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:riverpod_annotation/riverpod_annotation.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../../core/database/app_database.dart';
+import '../../../../core/database/database_provider.dart';
 import '../../domain/entities/health_record.dart';
 
 part 'health_repository.g.dart';
 
 @riverpod
-HealthRepository healthRepository(Ref ref) => HealthRepository();
+HealthRepository healthRepository(Ref ref) =>
+    HealthRepository(ref.watch(appDatabaseProvider));
 
 final class HealthRepository {
-  static const _kPrefix = 'health_';
-  static const _kListKey = 'health_records_';
+  HealthRepository(this._db);
 
-  Future<SharedPreferences> get _prefs => SharedPreferences.getInstance();
+  final AppDatabase _db;
 
   Future<List<HealthRecord>> getAll(String userId) async {
-    final prefs = await _prefs;
-    final ids = prefs.getStringList('$_kListKey$userId') ?? [];
-    final result = <HealthRecord>[];
-    for (final id in ids) {
-      final raw = prefs.getString('$_kPrefix$id');
-      if (raw != null) {
-        result.add(
-            HealthRecord.fromJson(jsonDecode(raw) as Map<String, dynamic>));
-      }
-    }
-    result.sort((a, b) => b.recordedAt.compareTo(a.recordedAt));
-    return result;
+    final rows = await _db.healthRecordDao.getAllForUser(userId);
+    return rows.map(_rowToRecord).toList();
   }
 
   Future<HealthRecord?> getLatest(String userId) async {
-    final all = await getAll(userId);
-    return all.firstOrNull;
+    final row = await _db.healthRecordDao.getLatestForUser(userId);
+    return row != null ? _rowToRecord(row) : null;
   }
 
   Future<HealthRecord> save(HealthRecord record) async {
-    final prefs = await _prefs;
-    await prefs.setString(
-        '$_kPrefix${record.id}', jsonEncode(record.toJson()));
-    final ids = prefs.getStringList('$_kListKey${record.userId}') ?? [];
-    if (!ids.contains(record.id)) ids.add(record.id);
-    await prefs.setStringList('$_kListKey${record.userId}', ids);
+    await _db.healthRecordDao.upsert(
+      HealthRecordRow(
+        id: record.id,
+        userId: record.userId,
+        recordedAt: record.recordedAt.millisecondsSinceEpoch,
+        weightKg: record.weightKg,
+        heightCm: record.heightCm,
+        bloodPressureSystolic: record.bloodPressureSystolic,
+        bloodPressureDiastolic: record.bloodPressureDiastolic,
+        heartRateBpm: record.heartRateBpm,
+        bloodSugarMmol: record.bloodSugarMmol,
+        notes: record.notes,
+      ),
+    );
     return record;
   }
 
-  Future<void> delete(String userId, String id) async {
-    final prefs = await _prefs;
-    await prefs.remove('$_kPrefix$id');
-    final ids = prefs.getStringList('$_kListKey$userId') ?? [];
-    ids.remove(id);
-    await prefs.setStringList('$_kListKey$userId', ids);
-  }
+  Future<void> delete(String userId, String id) =>
+      _db.healthRecordDao.deleteById(userId, id);
+
+  // ── Helpers ───────────────────────────────────────────────────────────────
+
+  HealthRecord _rowToRecord(HealthRecordRow row) => HealthRecord(
+        id: row.id,
+        userId: row.userId,
+        recordedAt: DateTime.fromMillisecondsSinceEpoch(row.recordedAt),
+        weightKg: row.weightKg,
+        heightCm: row.heightCm,
+        bloodPressureSystolic: row.bloodPressureSystolic,
+        bloodPressureDiastolic: row.bloodPressureDiastolic,
+        heartRateBpm: row.heartRateBpm,
+        bloodSugarMmol: row.bloodSugarMmol,
+        notes: row.notes,
+      );
 }
